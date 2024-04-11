@@ -109,7 +109,7 @@ message(STATUS "-------- Python detection -------------")
 find_package(Python COMPONENTS Interpreter Development NumPy)
 set(c2py_all_python_flags " -I${Python_INCLUDE_DIRS} -I${Python_NumPy_INCLUDE_DIRS} -L${Python_LIBRARY_DIRS} -lpython${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
 configure_file(c2py_flags.py.in c2py_flags @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/c2py_flags DESTINATION ${CMAKE_INSTALL_BINDIR} PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/c2py_flags DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
 # #############
 # Build Project
