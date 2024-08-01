@@ -20,11 +20,15 @@
 
 #include <ios>
 #include <iostream>
+#include <sstream>
 #include "./util/macros.hpp"
 
 namespace c2py {
 
-  bool check_python_version(long version_hex, long version_major, long version_minor, long version_micro) {
+  bool check_python_version(const char *module_name, long version_hex, long version_major, long version_minor, long version_micro) {
+
+    std::stringstream out;
+
     // Check that the python version of Python.h used to:
     //    -  compile the module including c2py.hpp
     //          (arguments of this function and frozen at compile time of the module).
@@ -32,14 +36,14 @@ namespace c2py {
     //          (PY_VERSION_HEX et al. below, determined by the Python.h used to compile this file)
     //  are identical.
     if (version_hex != PY_VERSION_HEX) {
-      std::cerr << "\n\n ******* FATAL ERROR in c2py ******** !!! \n\n " //
-                << "The c2py library was compiled with Python version "  //
-                << std::hex << PY_VERSION_HEX << std::dec                //
-                << " i.e. " << PY_MAJOR_VERSION << '.' << PY_MINOR_VERSION << '.' << PY_MICRO_VERSION
-                << "\n but the python extension is compiled with Python version " //
-                << std::hex << version_hex << std::dec << " i.e. " << version_major << '.' << version_minor << '.' << version_micro
-                << "\n They should be identical.\n\n ***********\n";
-      return false;
+      out << "\n\n  Can not load the c2py module "                    //
+          << (module_name ? module_name : "") << " ! \n\n"            //
+          << "    The c2py library was compiled with Python version " //
+          << std::hex << PY_VERSION_HEX << std::dec                   //
+          << "    i.e. " << PY_MAJOR_VERSION << '.' << PY_MINOR_VERSION << '.' << PY_MICRO_VERSION
+          << "\n    but the python extension is compiled with Python version " //
+          << std::hex << version_hex << std::dec << " i.e. " << version_major << '.' << version_minor << '.' << version_micro
+          << "\n    They should be identical.\n";
     }
 
     // Check that the python version of :
@@ -48,23 +52,26 @@ namespace c2py {
     //          (arguments of this function and frozen at compile time of the module).
     //  are identical.
     auto sys            = pyref::module("sys");
-    auto rt_version_hex = sys.attr("hexversion").as<long>();
+    auto rt_version_hex = PyLong_AsLong(sys.attr("hexversion"));
+    std::cerr << rt_version_hex << " = ? " << version_hex;
     if (rt_version_hex != version_hex) {
-      auto rt_version = sys.attr("version");
-      std::cerr << "\n\n ******* FATAL ERROR in c2py ******** !!! \n\n "
-                << "The extension module was compiled with Python version "                  //
-                << std::hex << version_hex << std::dec                                       //
-                << " i.e. " << version_major << '.' << version_minor << '.' << version_micro //
-                << "\n but the python intepreter has version "                               //
-                << std::hex << rt_version_hex << std::dec << " i.e. "                        //
-                << rt_version.attr("major").as<std::string>() << '.'                         //
-                << rt_version.attr("minor").as<std::string>() << '.'                         //
-                << rt_version.attr("micro").as<std::string>() << '.'                         //
-                << "\n They should be identical.\n\n ***********\n";
-      return false;
+      auto rt_version = sys.attr("version_info");
+      out << "\n\n  Can not load the c2py module "                                        //
+          << (module_name ? module_name : "") << " ! \n\n"                                //
+          << "    The c2py library was compiled with Python version "                     //
+          << std::hex << version_hex << std::dec                                          //
+          << "    i.e. " << version_major << '.' << version_minor << '.' << version_micro //
+          << "\n    but the python intepreter has version "                               //
+          << std::hex << rt_version_hex << std::dec << " i.e. "                           //
+          << PyLong_AsLong(rt_version.attr("major")) << '.'                               //
+          << PyLong_AsLong(rt_version.attr("minor")) << '.'                               //
+          << PyLong_AsLong(rt_version.attr("micro")) << '.'                               //
+          << "\n    They should be identical.\n";
     }
 
-    return true;
+    if (out.str().empty()) return true;
+    PyErr_SetString(PyExc_ImportError, out.str().c_str());
+    return false;
   }
 
   //-------------------
