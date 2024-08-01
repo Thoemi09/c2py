@@ -5,6 +5,9 @@
 
 namespace c2py {
 
+  // FIXME : in lookup use cpp_name, then typeid(T).name
+  // specialization of cpp_name <T> for wrapped name
+  //
   // ------------ cpp_name --------------
   // name of the c++ type for error messages and signatures
 

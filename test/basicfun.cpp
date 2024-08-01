@@ -3,7 +3,7 @@
 #include <complex>
 
 int f1(int x) { return x * 3; }
-int f1(double x) { return -x * 10; }
+double f1(double x) { return -x * 10; }
 
 /** 
  * A doc for f(x)
@@ -36,7 +36,7 @@ int ignored(int x) { return x * 3; }
 using dcomplex = std::complex<double>;
 
 namespace N {
-  auto tpl(auto x) { return -2; }
+  auto tpl(auto) { return -2; }
   template <int N> int tplxx() { return 4; }
 
   auto h(auto x) { return x + 4; }
@@ -50,15 +50,30 @@ namespace N {
 
 // ==========  Declare the module ==========
 
+// #pragma clang diagnostic ignored "-Wunused-const-variable"
+
+namespace c2py { 
+  struct dispatch2_t{};
+}
+
+constexpr auto ddd(auto && ...x) {return  c2py::dispatch2_t{};}
+consteval int lambda(auto && x) {return  1;}//c2py::dispatch2_t{};}
+
+constexpr auto mylambda = [](int x) {return x + 1;};
 namespace c2py_module {
 
-  auto documentation = "Module documentation";
+  constexpr auto documentation = "Module documentation";
 
   namespace add {
     //auto f  = c2py::dispatch<c2py::cast<int>(::f), c2py::cast<double>(::f)>;
-    auto h  = c2py::dispatch<N::h<int>, N::h<double>>;
-    auto hf = c2py::dispatch<c2py::cast<int>(::f1), N::h<double>>;
+    constexpr auto h  = c2py::dispatch<N::h<int>, N::h<double>>;
+    constexpr auto hf = c2py::dispatch<c2py::cast<int>(::f1), N::h<double>>;
+   // constexpr auto hf = c2py::dispatch<c2py::cast<int>(::f1), N::h<double>, +[](int x) {return x + 1;}>;
 
+    //constexpr auto hf2 = ddd(c2py::cast<int>(::f1), N::h<double>, [](int x) {return x + 1;});
+    
+    constexpr auto with_lambda = c2py::dispatch<[](int x) {return x + 1;}>;
+    //constexpr auto with_lambda = c2py::dispatch<mylambda>;
   } // namespace add
 
 } // namespace c2py_module

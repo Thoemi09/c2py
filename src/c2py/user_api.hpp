@@ -1,4 +1,5 @@
 #pragma once
+#include <tuple>
 
 // The user facing part of the c2py library
 // i.e. what is used in the c2py_module section of the user file.
@@ -20,8 +21,10 @@ namespace c2py {
 
   // ----------  c2py::dispatch to declare a specific dispatch -------------
 
-  template <auto... T> struct dispatch_t {};
-  template <auto... T> constexpr dispatch_t<T...> dispatch = {};
+  template <auto... a> struct dispatch_t {
+    static constexpr auto value = std::tuple{a...};
+  };
+  template <auto... a> constexpr dispatch_t<a...> dispatch = {};
 
   // ----------- Some cast operator for the user ---------------------------
   // when f is overloaded, cast<arguments....>(f) will disambiguite it

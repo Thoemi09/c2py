@@ -1,6 +1,7 @@
 #include "./wrapped.hpp"
 namespace c2py {
 
+  // FIXME: use
   // Fetch the pointer to the converter table from __main__
   std::shared_ptr<pto_table_t> get_pto_table_from_main() {
     // Fetch __main__ module

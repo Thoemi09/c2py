@@ -28,9 +28,13 @@
 namespace c2py {
 
   using namespace std::string_literals;
-  bool check_python_version(long version = PY_VERSION_HEX, long version_major = PY_MAJOR_VERSION, long version_minor = PY_MINOR_VERSION,
+
+  // Check python version.
+  // The version passed here is the version of libpython used to compile the module
+  // as the module includes this file.
+  // MUST be in cpp. do NOT put this function in hpp.
+  bool check_python_version(long version_hex = PY_VERSION_HEX, long version_major = PY_MAJOR_VERSION, long version_minor = PY_MINOR_VERSION,
                             long version_micro = PY_MICRO_VERSION);
-  // must be in cpp. Mark the version of Python against which c2py is compiled.
 
   /**
    * A class to own a reference PyObject *, with proper reference counting.

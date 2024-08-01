@@ -24,16 +24,47 @@
 
 namespace c2py {
 
-  // A little safety check that the compiled Python version is the same as the one used to compile c2py
-  bool check_python_version(long version, long version_major, long version_minor, long version_micro) {
-    bool b = version == PY_VERSION_HEX;
-    if (not b)
-      std::cerr << "\n\n ******* FATAL ERROR in c2py ******** !!! \n\n The c2py library was compiled with Python version " //
-                << std::hex << PY_VERSION_HEX << std::dec << " i.e. " << PY_MAJOR_VERSION << '.' << PY_MINOR_VERSION << '.' << PY_MICRO_VERSION
+  bool check_python_version(long version_hex, long version_major, long version_minor, long version_micro) {
+    // Check that the python version of Python.h used to:
+    //    -  compile the module including c2py.hpp
+    //          (arguments of this function and frozen at compile time of the module).
+    //    -  compile this file, hence libc2py.
+    //          (PY_VERSION_HEX et al. below, determined by the Python.h used to compile this file)
+    //  are identical.
+    if (version_hex != PY_VERSION_HEX) {
+      std::cerr << "\n\n ******* FATAL ERROR in c2py ******** !!! \n\n " //
+                << "The c2py library was compiled with Python version "  //
+                << std::hex << PY_VERSION_HEX << std::dec                //
+                << " i.e. " << PY_MAJOR_VERSION << '.' << PY_MINOR_VERSION << '.' << PY_MICRO_VERSION
                 << "\n but the python extension is compiled with Python version " //
-                << std::hex << version << std::dec << " i.e. " << version_major << '.' << version_minor << '.' << version_micro
+                << std::hex << version_hex << std::dec << " i.e. " << version_major << '.' << version_minor << '.' << version_micro
                 << "\n They should be identical.\n\n ***********\n";
-    return b;
+      return false;
+    }
+
+    // Check that the python version of :
+    //    -  the interpreter currently running, picked up from the sys module at runtime.
+    //    -  Python.h used to compile the module including c2py.hpp
+    //          (arguments of this function and frozen at compile time of the module).
+    //  are identical.
+    auto sys            = pyref::module("sys");
+    auto rt_version_hex = sys.attr("hexversion").as<long>();
+    if (rt_version_hex != version_hex) {
+      auto rt_version = sys.attr("version");
+      std::cerr << "\n\n ******* FATAL ERROR in c2py ******** !!! \n\n "
+                << "The extension module was compiled with Python version "                  //
+                << std::hex << version_hex << std::dec                                       //
+                << " i.e. " << version_major << '.' << version_minor << '.' << version_micro //
+                << "\n but the python intepreter has version "                               //
+                << std::hex << rt_version_hex << std::dec << " i.e. "                        //
+                << rt_version.attr("major").as<std::string>() << '.'                         //
+                << rt_version.attr("minor").as<std::string>() << '.'                         //
+                << rt_version.attr("micro").as<std::string>() << '.'                         //
+                << "\n They should be identical.\n\n ***********\n";
+      return false;
+    }
+
+    return true;
   }
 
   //-------------------
