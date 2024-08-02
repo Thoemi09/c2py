@@ -50,30 +50,15 @@ namespace N {
 
 // ==========  Declare the module ==========
 
-// #pragma clang diagnostic ignored "-Wunused-const-variable"
-
-namespace c2py { 
-  struct dispatch2_t{};
-}
-
-constexpr auto ddd(auto && ...x) {return  c2py::dispatch2_t{};}
-consteval int lambda(auto && x) {return  1;}//c2py::dispatch2_t{};}
-
-constexpr auto mylambda = [](int x) {return x + 1;};
 namespace c2py_module {
 
-  constexpr auto documentation = "Module documentation";
+  auto documentation = "Module documentation";
 
   namespace add {
     //auto f  = c2py::dispatch<c2py::cast<int>(::f), c2py::cast<double>(::f)>;
-    constexpr auto h  = c2py::dispatch<N::h<int>, N::h<double>>;
-    constexpr auto hf = c2py::dispatch<c2py::cast<int>(::f1), N::h<double>>;
-   // constexpr auto hf = c2py::dispatch<c2py::cast<int>(::f1), N::h<double>, +[](int x) {return x + 1;}>;
+    auto h  = c2py::dispatch<N::h<int>, N::h<double>>;
+    auto hf = c2py::dispatch<c2py::cast<int>(::f1), N::h<double>>;
 
-    //constexpr auto hf2 = ddd(c2py::cast<int>(::f1), N::h<double>, [](int x) {return x + 1;});
-    
-    constexpr auto with_lambda = c2py::dispatch<[](int x) {return x + 1;}>;
-    //constexpr auto with_lambda = c2py::dispatch<mylambda>;
   } // namespace add
 
 } // namespace c2py_module
