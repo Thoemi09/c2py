@@ -39,7 +39,7 @@ namespace c2py {
       }
 
       template <typename A> void operator()(nv_pair<A> const &x) {
-        [[maybe_unused]] int status = PyDict_SetItemString(kwargs, x.name.c_str(), detail::cxx2py_or_fun(x.value));
+        [[maybe_unused]] int status = PyDict_SetItemString(kwargs, x.name.c_str(), pyref{detail::cxx2py_or_fun(x.value)});
         assert(status == 0);
       }
     };
@@ -98,7 +98,7 @@ namespace c2py {
         (erased_args(x), ...);
         r = PyObject_Call(this->ob, erased_args.args, erased_args.kwargs);
       } else
-        r = PyObject_CallFunctionObjArgs(this->ob, detail::cxx2py_or_fun(x)..., NULL);
+        r = PyObject_CallFunctionObjArgs(this->ob, (PyObject *)pyref{detail::cxx2py_or_fun(x)}..., NULL);
       if (r.is_null()) {
         PyErr_Print();
         throw std::runtime_error{"Error calling the function " + fname}; //+ get_python_error()};

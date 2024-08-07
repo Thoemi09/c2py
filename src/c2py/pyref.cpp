@@ -94,7 +94,7 @@ namespace c2py {
   /// Import the module and returns a pyref to it
   pyref pyref::module(std::string const &module_name) {
     // Maybe the module was already imported?
-    PyObject *mod = PyImport_GetModule(PyUnicode_FromString(module_name.c_str()));
+    PyObject *mod = PyImport_GetModule(pyref::string(module_name.c_str()));
 
     // If not, import normally
     if (mod == nullptr) mod = PyImport_ImportModule(module_name.c_str());

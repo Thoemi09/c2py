@@ -25,7 +25,7 @@ namespace c2py {
       PyObject *self;
       const char *key;
       proxy &operator=(auto &x) {
-        PyDict_SetItemString(self, key, c2py::pyref{c2py::cxx2py(x)});
+        PyDict_SetItemString(self, key, pyref{cxx2py(x)});
         // NB : PyDict_SetItemString does NOT steal the reference (cf Python API),
         // so we put the new reference made by cxx2py
         // in a pyref which will release it at destruction.

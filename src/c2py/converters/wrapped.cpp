@@ -36,7 +36,7 @@ namespace c2py {
       sptr = std::make_shared<pto_table_t>();
 
       // Now register the pointer in __main__
-      PyObject *mod = PyImport_GetModule(PyUnicode_FromString("__main__"));
+      PyObject *mod = PyImport_GetModule(pyref::string("__main__"));
       auto *p       = new std::shared_ptr<pto_table_t>{sptr}; //NOLINT
       pyref c       = PyCapsule_New((void *)p, "__main__.__cpp2py_table", (PyCapsule_Destructor)_table_destructor);
       pyref s       = PyUnicode_FromString("__cpp2py_table");
