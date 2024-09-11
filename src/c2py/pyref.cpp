@@ -25,7 +25,7 @@
 
 namespace c2py {
 
-  bool check_python_version(const char *module_name, long version_hex, long version_major, long version_minor, long version_micro) {
+  bool check_python_version(const char *module_name, long version_major, long version_minor) {
 
     std::stringstream out;
 
@@ -33,17 +33,16 @@ namespace c2py {
     //    -  compile the module including c2py.hpp
     //          (arguments of this function and frozen at compile time of the module).
     //    -  compile this file, hence libc2py.
-    //          (PY_VERSION_HEX et al. below, determined by the Python.h used to compile this file)
+    //          (PY_MAJOR_VERSION and PY_MINOR_VERSION below, determined by the Python.h used to compile this file)
     //  are identical.
-    if (version_hex != PY_VERSION_HEX) {
-      out << "\n\n  Can not load the c2py module "                    //
-          << (module_name ? module_name : "") << " ! \n\n"            //
-          << "    The c2py library was compiled with Python version " //
-          << std::hex << PY_VERSION_HEX << std::dec                   //
-          << "    i.e. " << PY_MAJOR_VERSION << '.' << PY_MINOR_VERSION << '.' << PY_MICRO_VERSION
-          << "\n    but the python extension is compiled with Python version " //
-          << std::hex << version_hex << std::dec << " i.e. " << version_major << '.' << version_minor << '.' << version_micro
-          << "\n    They should be identical.\n";
+    if (version_major != PY_MAJOR_VERSION or version_minor != PY_MINOR_VERSION) {
+      out << "\n\n  Can not load the c2py module "                          //
+          << (module_name ? module_name : "") << " ! \n\n"                  //
+          << "    The c2py library was compiled with Python version "       //
+          << PY_MAJOR_VERSION << '.' << PY_MINOR_VERSION << "\n"            //
+          << "    but the python extension is compiled with Python version" //
+          << version_major << '.' << version_minor << "\n"                  //
+          << "    They should be identical.\n";
     }
 
     // Check that the python version of :
@@ -51,22 +50,17 @@ namespace c2py {
     //    -  Python.h used to compile the module including c2py.hpp
     //          (arguments of this function and frozen at compile time of the module).
     //  are identical.
-    auto sys            = pyref::module("sys");
-    auto rt_version_hex = PyLong_AsLong(sys.attr("hexversion"));
-    std::cerr << rt_version_hex << " = ? " << version_hex;
-    if (rt_version_hex != version_hex) {
-      auto rt_version = sys.attr("version_info");
-      out << "\n\n  Can not load the c2py module "                                        //
-          << (module_name ? module_name : "") << " ! \n\n"                                //
-          << "    The c2py library was compiled with Python version "                     //
-          << std::hex << version_hex << std::dec                                          //
-          << "    i.e. " << version_major << '.' << version_minor << '.' << version_micro //
-          << "\n    but the python intepreter has version "                               //
-          << std::hex << rt_version_hex << std::dec << " i.e. "                           //
-          << PyLong_AsLong(rt_version.attr("major")) << '.'                               //
-          << PyLong_AsLong(rt_version.attr("minor")) << '.'                               //
-          << PyLong_AsLong(rt_version.attr("micro")) << '.'                               //
-          << "\n    They should be identical.\n";
+    auto sys_version_info = pyref::module("sys").attr("version_info");
+    auto rt_version_major = PyLong_AsLong(sys_version_info.attr("major"));
+    auto rt_version_minor = PyLong_AsLong(sys_version_info.attr("minor"));
+    if (rt_version_major != PY_MAJOR_VERSION or rt_version_minor != PY_MINOR_VERSION) {
+      out << "\n\n  Can not load the c2py module "                    //
+          << (module_name ? module_name : "") << " ! \n\n"            //
+          << "    The c2py library was compiled with Python version " //
+          << PY_MAJOR_VERSION << '.' << PY_MINOR_VERSION << "\n"      //
+          << "    but the python intepreter has version "             //
+          << rt_version_major << '.' << rt_version_minor << "\n"      //
+          << "    They should be identical.\n";
     }
 
     if (out.str().empty()) return true;
